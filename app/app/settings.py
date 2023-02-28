@@ -36,13 +36,11 @@ INSTALLED_APPS = [
 
     # Rest
     'rest_framework',
-    'drf_spectacular',
     'rest_framework.authtoken',
+    'drf_spectacular',
 
     # User app
     'user',
-
-
 
     'django.contrib.admin',
     'django.contrib.auth',
