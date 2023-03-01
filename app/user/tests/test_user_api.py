@@ -46,7 +46,7 @@ class PublicUserApiTests(TestCase):
             'name': 'Test Name',
         }
         create_user(**payload)
-        res = self.client.post(CREATE_USER_URL)
+        res = self.client.post(CREATE_USER_URL, payload)
 
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -95,6 +95,7 @@ class PublicUserApiTests(TestCase):
 
     def test_create_token_email_not_found(self):
         """Test error returned if user not found for given email."""
+
         payload = {'email': 'test@example.com', 'password': 'pass123'}
         res = self.client.post(TOKEN_URL, payload)
 
@@ -130,7 +131,7 @@ class PrivateUserApiTests(TestCase):
         self.client = APIClient()
         # Any requests that we will use for this client will be
         # made using this user
-        self.client.force_authentication(user=self.user)
+        self.client.force_authenticate(user=self.user)
 
     def test_retrieve_profile_success(self):
         """Test retrieving profile for logged in user."""
