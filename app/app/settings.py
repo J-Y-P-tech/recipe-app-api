@@ -31,16 +31,15 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
 
-    # Core
-    'core',
-
     # Rest
     'rest_framework',
     'rest_framework.authtoken',
     'drf_spectacular',
 
-    # User app
+    # Apps
     'user',
+    'core',
+    'recipe',
 
     'django.contrib.admin',
     'django.contrib.auth',

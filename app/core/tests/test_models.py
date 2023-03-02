@@ -1,19 +1,12 @@
 """
 Tests for models.
 """
-from django.test import TestCase
+from decimal import Decimal
 
-"""
-get_user_model helper function is provided by Django in order to get the default, use a model
-for the project. Now you can reference the model directly from the models that we're going to define.
-After we write this test, however, it's best practice to use get use a model so that if you ever do
-decide to change the user model, then it will be automatically updated everywhere in your code because
-as long as you use the user model function to retrieve your custom user model, you will always be able
-to get the default model as configured for that product.
-So when you're using the Django user model, it's best to use this get user model function in order
-to get a reference to your custom user model.
-"""
+from django.test import TestCase
 from django.contrib.auth import get_user_model
+
+from core import models
 
 
 class ModelTests(TestCase):
@@ -57,3 +50,19 @@ class ModelTests(TestCase):
 
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
+
+    def test_create_recipe(self):
+        """Test creating a recipe is successful."""
+        user = get_user_model().objects.create_user(
+            'test@example.com',
+            'testpass123',
+        )
+        recipe = models.Recipe.objects.create(
+            user=user,
+            title='Sample recipe name',
+            time_minutes=5,
+            price=Decimal('5.50'),
+            description="Sample recipe description.",
+        )
+
+        self.assertEqual(str(recipe), recipe.title)
