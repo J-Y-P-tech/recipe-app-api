@@ -4,7 +4,10 @@ Views for the recipe APIs
 from rest_framework import (
     viewsets,
     mixins,
+    status,
 )
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
@@ -31,12 +34,39 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """Return the serializer class for request."""
         if self.action == 'list':
             return serializers.RecipeSerializer
+        # we add custom action named  'upload_image'
+        # there are predefined actions in ModelViewSet
+        # but 'upload_image' is not in them
+        elif self.action == 'upload_image':
+            return serializers.RecipeImageSerializer
 
         return self.serializer_class
 
     def perform_create(self, serializer):
         """Create a new recipe."""
         serializer.save(user=self.request.user)
+
+    """
+    Here we add custom action using @action decorated provided
+    by Django Rest Framework.
+    The actions decorator lets you specify the different HTTP methods 
+    that are supported by the custom action.
+    methods=['POST'] means that we accept only POST actions.
+    detail=True --> this is applicable to detailviewset only not listviewset
+    url_path='upload-image' --> custom url path connected to
+    reverse('recipe:recipe-upload-image', args=[recipe_id])    
+    """
+    @action(methods=['POST'], detail=True, url_path='upload-image')
+    def upload_image(self, request, pk=None):
+        """Upload an image to recipe."""
+        recipe = self.get_object()
+        serializer = self.get_serializer(recipe, data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class BaseRecipeAttrViewSet(mixins.DestroyModelMixin,
