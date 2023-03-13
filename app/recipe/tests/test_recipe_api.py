@@ -378,6 +378,46 @@ class PrivateRecipeApiTests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(recipe.ingredients.count(), 0)
 
+    def test_filter_by_tags(self):
+        """Test filtering recipes by tags."""
+        r1 = create_recipe(user=self.user, title='Thai Vegetable Curry')
+        r2 = create_recipe(user=self.user, title='Aubergine with Tahini')
+        tag1 = Tag.objects.create(user=self.user, name='Vegan')
+        tag2 = Tag.objects.create(user=self.user, name='Vegetarian')
+        r1.tags.add(tag1)
+        r2.tags.add(tag2)
+        r3 = create_recipe(user=self.user, title='Fish and chips')
+
+        params = {'tags': f'{tag1.id},{tag2.id}'}
+        res = self.client.get(RECIPES_URL, params)
+
+        s1 = RecipeSerializer(r1)
+        s2 = RecipeSerializer(r2)
+        s3 = RecipeSerializer(r3)
+        self.assertIn(s1.data, res.data)
+        self.assertIn(s2.data, res.data)
+        self.assertNotIn(s3.data, res.data)
+
+    def test_filter_by_ingredients(self):
+        """Test filtering recipes by ingredients."""
+        r1 = create_recipe(user=self.user, title='Posh Beans on Toast')
+        r2 = create_recipe(user=self.user, title='Chicken Cacciatore')
+        in1 = Ingredient.objects.create(user=self.user, name='Feta Cheese')
+        in2 = Ingredient.objects.create(user=self.user, name='Chicken')
+        r1.ingredients.add(in1)
+        r2.ingredients.add(in2)
+        r3 = create_recipe(user=self.user, title='Red Lentil Daal')
+
+        params = {'ingredients': f'{in1.id},{in2.id}'}
+        res = self.client.get(RECIPES_URL, params)
+
+        s1 = RecipeSerializer(r1)
+        s2 = RecipeSerializer(r2)
+        s3 = RecipeSerializer(r3)
+        self.assertIn(s1.data, res.data)
+        self.assertIn(s2.data, res.data)
+        self.assertNotIn(s3.data, res.data)
+
 
 class ImageUploadTests(TestCase):
     """Tests for the image upload API."""
@@ -397,25 +437,11 @@ class ImageUploadTests(TestCase):
     def test_upload_image(self):
         """Test uploading an image to a recipe."""
         url = image_upload_url(self.recipe.id)
-        """
-        This is a helper module that's provided by Python, which allows you to create 
-        temporary files when you're working with Python code.        
-        So while we're in this block that says with temp filed on name temporary file 
-        as image file, all the code that's in here, it's going to have a temporary file 
-        created that we can use. And then as soon as this ends, it's going to clean up, 
-        file out for us all nicely. So we're using this name temporary file to create a 
-        temporary image file that we can use to test uploading to our endpoint.
-        """
         with tempfile.NamedTemporaryFile(suffix='.jpg') as image_file:
-            # Creates basic test image, black 10 by 10 pixels
             img = Image.new('RGB', (10, 10))
-            # Save file to file system
             img.save(image_file, format='JPEG')
-            # seeks back to the beginning of the file because
-            # img.save() moves pointer to the end of the file
             image_file.seek(0)
             payload = {'image': image_file}
-            # format='multipart' contains text and binary data
             res = self.client.post(url, payload, format='multipart')
 
         self.recipe.refresh_from_db()

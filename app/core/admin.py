@@ -50,6 +50,10 @@ class UserAdmin(BaseUserAdmin):
     )
 
 
+class TagsAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'user')
+
+
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.Recipe)
-admin.site.register(models.Tag)
+admin.site.register(models.Tag, TagsAdmin)
